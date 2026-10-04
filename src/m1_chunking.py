@@ -11,6 +11,8 @@ Test: pytest tests/test_m1.py
 
 import os, sys, glob, re
 from dataclasses import dataclass, field
+from functools import lru_cache
+from uuid import uuid4
 
 if hasattr(sys.stdout, "reconfigure"):
     sys.stdout.reconfigure(encoding="utf-8")
@@ -86,13 +88,19 @@ def chunk_basic(text: str, chunk_size: int = 500, metadata: dict | None = None) 
 # ─── Strategy 1: Semantic Chunking ───────────────────────
 
 
+@lru_cache(maxsize=1)
+def _semantic_model():
+    from sentence_transformers import SentenceTransformer
+
+    return SentenceTransformer("all-MiniLM-L6-v2")
+
+
 def chunk_semantic(text: str, threshold: float = SEMANTIC_THRESHOLD,
                    metadata: dict | None = None) -> list[Chunk]:
     """
     Split text by sentence similarity — nhóm câu cùng chủ đề.
     Tốt hơn basic vì không cắt giữa ý.
     """
-    # TODO: Implement semantic chunking
     # 1. from sentence_transformers import SentenceTransformer
     #    from numpy import dot
     #    from numpy.linalg import norm
@@ -105,10 +113,55 @@ def chunk_semantic(text: str, threshold: float = SEMANTIC_THRESHOLD,
     #      - sim(embedding[i-1], embedding[i]) < threshold → tách chunk mới
     #      - else: gộp vào chunk hiện tại
     # 7. Return [Chunk(text=joined_group, metadata={..., "strategy": "semantic"})]
-    return []
+    import numpy as np
+
+    metadata = metadata or {}
+    sentences = [s.strip() for s in re.split(r"(?<=[.!?])\s+|\n\s*\n", text) if s.strip()]
+    if not sentences:
+        return []
+    groups = [[sentences[0]]]
+    if len(sentences) > 1:
+        embeddings = _semantic_model().encode(sentences)
+        for i in range(1, len(sentences)):
+            a, b = embeddings[i - 1], embeddings[i]
+            similarity = np.dot(a, b) / (np.linalg.norm(a) * np.linalg.norm(b) + 1e-9)
+            if similarity < threshold:
+                groups.append([])
+            groups[-1].append(sentences[i])
+    return [Chunk(text=" ".join(group), metadata={**metadata,
+                  "strategy": "semantic", "chunk_index": i})
+            for i, group in enumerate(groups)]
 
 
 # ─── Strategy 2: Hierarchical Chunking ──────────────────
+
+
+def _split_bounded(text: str, size: int) -> list[str]:
+    """Pack paragraphs, splitting oversized ones at whitespace when possible."""
+    pieces = []
+    current = ""
+    for paragraph in re.split(r"\n\s*\n", text):
+        paragraph = paragraph.strip()
+        if not paragraph:
+            continue
+        candidate = f"{current}\n\n{paragraph}" if current else paragraph
+        if len(candidate) <= size:
+            current = candidate
+            continue
+        if current:
+            pieces.append(current)
+            current = ""
+        while len(paragraph) > size:
+            whitespace = list(re.finditer(r"\s+", paragraph[:size + 1]))
+            cut = whitespace[-1].start() if whitespace else size
+            if cut == 0:
+                cut = size
+            pieces.append(paragraph[:cut].strip())
+            paragraph = paragraph[cut:].strip()
+        current = paragraph
+    if current:
+        pieces.append(current)
+    return pieces
 
 
 def chunk_hierarchical(text: str, parent_size: int = HIERARCHICAL_PARENT_SIZE,
@@ -121,7 +174,6 @@ def chunk_hierarchical(text: str, parent_size: int = HIERARCHICAL_PARENT_SIZE,
     Returns:
         (parents, children) — mỗi child có parent_id link đến parent.
     """
-    # TODO: Implement hierarchical chunking
     # 1. metadata = metadata or {}
     # 2. Split text bằng "\n\n" → paragraphs
     # 3. Gộp paragraphs thành parent chunks (mỗi parent ≤ parent_size chars):
@@ -130,7 +182,22 @@ def chunk_hierarchical(text: str, parent_size: int = HIERARCHICAL_PARENT_SIZE,
     # 4. Mỗi parent → split thành children (mỗi child ≤ child_size chars):
     #      children.append(Chunk(text=..., metadata={..., "chunk_type": "child"}, parent_id=pid))
     # 5. return (parents, children)
-    return ([], [])
+    if parent_size <= 0 or child_size <= 0:
+        raise ValueError("parent_size and child_size must be positive")
+    metadata = metadata or {}
+    parents, children = [], []
+    # A call-specific namespace avoids parent ID collisions between documents.
+    namespace = uuid4().hex
+    for i, parent_text in enumerate(_split_bounded(text, parent_size)):
+        pid = f"parent_{namespace}_{i}"
+        parents.append(Chunk(text=parent_text, metadata={**metadata,
+                             "chunk_type": "parent", "parent_id": pid,
+                             "chunk_index": i, "strategy": "hierarchical"}))
+        for child_text in _split_bounded(parent_text, child_size):
+            children.append(Chunk(text=child_text, metadata={**metadata,
+                                  "chunk_type": "child", "chunk_index": len(children),
+                                  "strategy": "hierarchical"}, parent_id=pid))
+    return parents, children
 
 
 # ─── Strategy 3: Structure-Aware Chunking ────────────────
@@ -141,14 +208,44 @@ def chunk_structure_aware(text: str, metadata: dict | None = None) -> list[Chunk
     Parse markdown headers → chunk theo logical structure.
     Giữ nguyên tables, code blocks, lists — không cắt giữa chừng.
     """
-    # TODO: Implement structure-aware chunking
     # 1. metadata = metadata or {}
     # 2. sections = re.split(r'(^#{1,3}\s+.+$)', text, flags=re.MULTILINE)
     # 3. Duyệt sections:
     #      - Nếu match header (^#{1,3}\s+): lưu header hiện tại, tạo chunk cho content trước đó
     #      - Else: gộp vào content hiện tại
     # 4. Return [Chunk(text=header+content, metadata={..., "section": header, "strategy": "structure"})]
-    return []
+    metadata = metadata or {}
+    chunks = []
+    section = ""
+    lines = []
+    fence_char = None
+    fence_size = 0
+
+    def flush():
+        content = "".join(lines).strip()
+        if content:
+            chunks.append(Chunk(text=content, metadata={**metadata,
+                                "section": section, "strategy": "structure",
+                                "chunk_index": len(chunks)}))
+
+    for line in text.splitlines(keepends=True):
+        fence = re.match(r"^ {0,3}(`{3,}|~{3,})(.*)$", line.rstrip("\r\n"))
+        if fence_char is not None:
+            lines.append(line)
+            if (fence and fence.group(1)[0] == fence_char
+                    and len(fence.group(1)) >= fence_size and not fence.group(2).strip()):
+                fence_char = None
+            continue
+        if fence:
+            fence_char = fence.group(1)[0]
+            fence_size = len(fence.group(1))
+        elif re.match(r"^ {0,3}#{1,6}\s+\S", line):
+            flush()
+            lines = []
+            section = line.strip()
+        lines.append(line)
+    flush()
+    return chunks
 
 
 # ─── A/B Test: Compare All Strategies ────────────────────

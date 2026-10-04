@@ -1,0 +1,133 @@
+{
+  "build_and_eval": {
+    "chunking_seconds": 0.03407478332519531,
+    "enrichment_seconds": 406.4968509674072,
+    "indexing_seconds": 11.143063068389893,
+    "reranker_loading_seconds": 3.601306200027466,
+    "evaluation_seconds": 14.261403322219849,
+    "evaluation_retry_seconds": 162
+  },
+  "queries": [
+    {
+      "question": "Nhân viên được nghỉ bao nhiêu ngày khi kết hôn?",
+      "retrieval_seconds": 0.8886570420581847,
+      "reranking_seconds": 0.43146166601218283,
+      "generation_seconds": 0.9676200839458033
+    },
+    {
+      "question": "Bảo hiểm sức khỏe PVI có hạn mức bao nhiêu cho nhân viên?",
+      "retrieval_seconds": 0.13140099996235222,
+      "reranking_seconds": 0.5255698330001906,
+      "generation_seconds": 1.746516542043537
+    },
+    {
+      "question": "Phụ cấp ăn trưa hàng tháng là bao nhiêu?",
+      "retrieval_seconds": 0.15647841698955745,
+      "reranking_seconds": 0.5604882499901578,
+      "generation_seconds": 1.0848417090019211
+    },
+    {
+      "question": "Nhân viên được nghỉ bao nhiêu ngày phép năm?",
+      "retrieval_seconds": 0.09872258407995105,
+      "reranking_seconds": 0.40346437494736165,
+      "generation_seconds": 1.1157546669710428
+    },
+    {
+      "question": "Thâm niên bao nhiêu năm thì được cộng thêm ngày phép?",
+      "retrieval_seconds": 0.1637451669666916,
+      "reranking_seconds": 0.4306628330377862,
+      "generation_seconds": 1.731598624959588
+    },
+    {
+      "question": "Mật khẩu phải có tối thiểu bao nhiêu ký tự?",
+      "retrieval_seconds": 0.14465679100248963,
+      "reranking_seconds": 0.46138733299449086,
+      "generation_seconds": 1.8699430839624256
+    },
+    {
+      "question": "Bao lâu phải đổi mật khẩu một lần?",
+      "retrieval_seconds": 0.1373674999922514,
+      "reranking_seconds": 0.4319454589858651,
+      "generation_seconds": 1.9214786250377074
+    },
+    {
+      "question": "Có cần kích hoạt xác thực đa yếu tố (MFA) không?",
+      "retrieval_seconds": 0.14913808298297226,
+      "reranking_seconds": 0.5527299590175971,
+      "generation_seconds": 1.91002099995967
+    },
+    {
+      "question": "Nhân viên thử việc có được nghỉ phép năm không?",
+      "retrieval_seconds": 0.2010400000726804,
+      "reranking_seconds": 0.4304504169849679,
+      "generation_seconds": 0.9073625000892207
+    },
+    {
+      "question": "Khi phát hiện malware trên máy, nhân viên có nên tự xử lý không?",
+      "retrieval_seconds": 0.13294066593516618,
+      "reranking_seconds": 0.4475883749546483,
+      "generation_seconds": 1.7437452919548377
+    },
+    {
+      "question": "Nhân viên thử việc có được hưởng bảo hiểm sức khỏe PVI không?",
+      "retrieval_seconds": 0.1655347499763593,
+      "reranking_seconds": 0.416423249989748,
+      "generation_seconds": 2.485720583004877
+    },
+    {
+      "question": "Một nhân viên Senior có 9 năm thâm niên được nghỉ bao nhiêu ngày phép năm và lương trong khoảng nào?",
+      "retrieval_seconds": 0.17082574998494238,
+      "reranking_seconds": 0.4670725000323728,
+      "generation_seconds": 1.2443148749880493
+    },
+    {
+      "question": "Nếu cần mua một chiếc laptop 30 triệu cho nhân viên mới, ai phê duyệt và cần gì từ phòng CNTT?",
+      "retrieval_seconds": 0.1392780840396881,
+      "reranking_seconds": 0.4929577079601586,
+      "generation_seconds": 1.8063684579683468
+    },
+    {
+      "question": "Nhân viên được tài trợ khóa học 25 triệu, nghỉ việc sau 8 tháng hoàn thành khóa học. Phải hoàn trả bao nhiêu?",
+      "retrieval_seconds": 0.16670249996241182,
+      "reranking_seconds": 0.46254704101011157,
+      "generation_seconds": 2.321542749996297
+    },
+    {
+      "question": "Mentor và buddy của nhân viên mới có thể là cùng một người không? Quản lý trực tiếp có thể làm mentor không?",
+      "retrieval_seconds": 0.13335487490985543,
+      "reranking_seconds": 0.4971991670317948,
+      "generation_seconds": 1.1541141660418361
+    },
+    {
+      "question": "Muốn mua thiết bị trị giá 55 triệu cần ai phê duyệt?",
+      "retrieval_seconds": 0.19745999993756413,
+      "reranking_seconds": 0.45089112501591444,
+      "generation_seconds": 2.3209726250497624
+    },
+    {
+      "question": "Nhân viên tạm ứng 15 triệu, sau 20 ngày mới thanh toán. Bị phạt bao nhiêu?",
+      "retrieval_seconds": 0.1797691669780761,
+      "reranking_seconds": 0.48835812497418374,
+      "generation_seconds": 1.8790697089862078
+    },
+    {
+      "question": "Lương thử việc của nhân viên Junior mức cao nhất là bao nhiêu?",
+      "retrieval_seconds": 0.1686168749583885,
+      "reranking_seconds": 0.539033958921209,
+      "generation_seconds": 2.110581916058436
+    },
+    {
+      "question": "Thông tin lương thuộc cấp độ phân loại dữ liệu nào?",
+      "retrieval_seconds": 0.134181416942738,
+      "reranking_seconds": 0.5337507500080392,
+      "generation_seconds": 1.1157061660196632
+    },
+    {
+      "question": "Nghỉ phép không lương 20 ngày cần ai phê duyệt?",
+      "retrieval_seconds": 0.15445545804686844,
+      "reranking_seconds": 0.4434602080145851,
+      "generation_seconds": 2.0278951660729945
+    }
+  ],
+  "evaluation_note": "Final RAGAS report uses retry with max_workers=2; original evaluation_seconds records the first attempt."
+}

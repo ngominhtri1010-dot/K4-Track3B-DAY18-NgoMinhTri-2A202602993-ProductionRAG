@@ -143,6 +143,24 @@ K4-Track3B-Production-RAG/
 
 ## Quy chuẩn đặt tên Repository & Nộp bài
 
+### Cấu hình OpenRouter
+
+Trong `.env`, đặt `LLM_PROVIDER=openrouter` và điền `OPENROUTER_API_KEY`.
+Các model có thể đổi bằng `LLM_MODEL` (answer + enrichment), `RAGAS_MODEL`
+(LLM đánh giá) và `RAGAS_EMBEDDING_MODEL` (embeddings đánh giá).
+Giá trị mẫu nằm trong `.env.example`; model OpenRouter dùng ID có tiền tố nhà cung cấp.
+RAGAS được cấu hình riêng cả LLM và embeddings để dùng cùng endpoint OpenRouter.
+Embedding tìm kiếm BGE-M3 và reranker vẫn chạy local.
+
+Sau khi lưu `.env`, chạy lại tiến trình:
+
+```bash
+.venv/bin/python main.py
+```
+
+Lệnh này chạy baseline, enrichment, trả lời và RAGAS bằng API thật khi có key.
+Nếu thiếu key, pipeline dùng fallback và ghi `evaluation_status=unavailable`.
+
 - **Cấu trúc đặt tên repo:**  
   `K4-Track3B-DAY18-<HoVaTen>-<MSSV>-ProductionRAG`  
   *(Ví dụ: `K4-Track3B-DAY18-NguyenVanAn-AI20K001-ProductionRAG`)*
